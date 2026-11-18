@@ -106,3 +106,25 @@ export async function loadRecoveryStats(): Promise<Record<string, unknown>> {
   if (!response.ok) throw new Error('恢复状态查询失败')
   return await response.json()
 }
+
+/** 跨模块数据流：失败恢复入口，只展示最终仍未成功的元素 */
+export async function loadRecoveryPending(): Promise<Record<string, unknown>> {
+  const response = await request('/api/recovery/pending')
+  if (!response.ok) throw new Error('失败恢复清单读取失败')
+  return await response.json()
+}
+
+/** 跨模块数据流：批量查看执行会话中每个元素的最终状态和采用策略 */
+export async function loadSessionDetails(sessionIds: string[]): Promise<Record<string, unknown>> {
+  const query = new URLSearchParams({ ids: sessionIds.join(',') }).toString()
+  const response = await request(`/api/runtime-sessions/detail?${query}`)
+  if (!response.ok) throw new Error('执行会话详情读取失败')
+  return await response.json()
+}
+
+/** 跨模块数据流：核对执行记录一致性（同一元素不得同时成功和失败） */
+export async function loadSessionConsistency(): Promise<Record<string, unknown>> {
+  const response = await request('/api/runtime-sessions/consistency')
+  if (!response.ok) throw new Error('一致性核对失败')
+  return await response.json()
+}

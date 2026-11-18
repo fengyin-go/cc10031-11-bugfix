@@ -136,6 +136,29 @@ def runtime_sessions() -> dict[str, object]:
     return {"count": len(sessions), "sessions": sessions}
 
 
+@app.get("/api/runtime-sessions/detail")
+def runtime_sessions_detail(ids: str = Query(default="")) -> dict[str, object]:
+    """批量查看执行会话：每个元素的最终状态和采用策略。
+
+    ids 为逗号分隔的会话 ID，如 ?ids=a1b2c3d4,e5f6g7h8。
+    """
+    session_ids = [s.strip() for s in ids.split(",") if s.strip()]
+    return runtime_session.get_sessions_detail(session_ids)
+
+
+@app.get("/api/runtime-sessions/consistency")
+def runtime_sessions_consistency() -> dict[str, object]:
+    """核对执行记录一致性：同一元素不得同时显示成功和失败。"""
+    return runtime_session.consistency_check()
+
+
+@app.get("/api/recovery/pending")
+def recovery_pending() -> dict[str, object]:
+    """失败恢复入口：只展示最终仍未成功的元素。"""
+    items = runtime_session.failure_recovery_list()
+    return {"count": len(items), "items": items}
+
+
 # ---- 跨模块数据流编排入口 ----
 
 @app.post("/api/pipeline/rpa-lifecycle")
